@@ -130,7 +130,7 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         }
         billKey.set(hexToUint8Array(encodeBills));
     }
-    removeLmtBill(params: string):void{
+    removeLmtBill(params: string):void {
         sys.log('adamayu in removeLmtBill 1');
         sys.require(params.length == 4, "illegal params");
         const encodeIndex = params.slice(0, 4);
@@ -138,7 +138,7 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         let index = BigInt.fromString(encodeIndex, 16).toInt32();
         let billKey = sys.aspect.mutableState.get<Uint8Array>(Aspect.SYS_LMT_BILL_STORAGE_KEY);
         let encodeBills = uint8ArrayToHex(billKey.unwrap());
-        sys.require(encodeBills.length >= 120, "no limit bills");
+        sys.require(encodeBills.length >= 110, "no limit bills");
         let encodeCount = encodeBills.slice(0, 4);
         let count = BigInt.fromString(encodeCount, 16).toInt32();
         sys.require(index > 0 && index <= count, "out of index boundry");
