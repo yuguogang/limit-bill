@@ -3,7 +3,7 @@
 
 ## Instruction
 
-This is a sample project of Artela Aspect. 
+This is a sample project of Artela Aspect. to get the test success you should add privateKey.txt in top fold.
 
 ## Files
 
