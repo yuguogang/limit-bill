@@ -27,7 +27,39 @@ function rmPrefix(data) {
         return data;
     }
 }
+const packLbParams = (amount, price, buyOrSell) => {
+    const l_price = new BigNumber(price);
+    const amount_towei = amount * 10 ** 18;
+    const param_amount = amount_towei.toString(16).padStart(64, '0'); 
+    const sqrtPriceLimitX96 = l_price.squareRoot().times(new BigNumber(2).pow(96));
+    const uint160Value = sqrtPriceLimitX96.mod(new BigNumber(2).pow(160)).integerValue(BigNumber.ROUND_FLOOR);
+    const param_sqrtPriceLimitX96 = uint160Value.toString(16).padStart(40, '0');
+    const param_buyOrSell = buyOrSell.toString(16).padStart(2, '0');
+    const params = '0x'+param_amount + param_sqrtPriceLimitX96 + param_buyOrSell;
+    return params;
+};
 
+const parseLbData=(data)=> {
+    const result = [];
+  
+    while (data.length >= 106) {
+      const uint256Amount = parseInt(data.substring(0, 64), 16);
+      const uint160ValueB = new BigNumber(data.substring(64, 104), 16).div(new BigNumber(2).pow(96));
+      const price=uint160ValueB.times(uint160ValueB).toString();
+      const buyOrSell = parseInt(data.substring(104, 106), 16);
+  
+      result.push({
+        uint256Amount,
+        price,
+        buyOrSell,
+      });
+  
+      // 剩余数据
+      data = data.substring(106);
+    }
+  
+    return result;
+}
 // function getOriginalV(hexV, chainId_) {
 //     const v = new BigNumber(hexV, 16);
 //     const chainId = new BigNumber(chainId_);
@@ -233,9 +265,11 @@ async function f() {
     // ******************************************
      console.log(`add limit bill`);
      op = "0x0002";
-     params = rmPrefix("0x00000000000000000000000000000000000000000000000000000000000000AA000000000000000000000000000000000000000B01");
+     //a limit bill composed by amount uint256,price square and div 2^96 uint160, buyOrSell bool
+    //  params = rmPrefix("0x00000000000000000000000000000000000000000000000000000000000000AA000000000000000000000000000000000000000B01");
 
     console.log("op: ", op);
+    params = rmPrefix(packLbParams(0.01,4884,1));
     console.log("params: ", params);
 
     calldata = aspect.operation(op + params).encodeABI();
@@ -267,9 +301,15 @@ async function f() {
         to: aspectCore.options.address, // contract address
         data: calldata
     });
-
+    
     console.log("ret ", ret);
-    console.log("get limit bills ret  ", web3.eth.abi.decodeParameter('string', ret));
+    let decodedRet = web3.eth.abi.decodeParameter('string', ret);
+    if(decodedRet.length > 0) {
+        const lbm = parseInt(decodedRet.substring(0, 4), 16);
+        console.log("limit bill number:", lbm);
+        const resArray = parseLbData(decodedRet.substring(4));
+        console.log(resArray);
+    }
     console.log(`retrieve limit bills`);
 
 
@@ -311,8 +351,13 @@ async function f() {
        data: calldata
    });
 
-   console.log("ret ", ret);
-   console.log("get limit bills ret  ", web3.eth.abi.decodeParameter('string', ret));
+    decodedRet = web3.eth.abi.decodeParameter('string', ret);
+   if(decodedRet.length > 0) {
+       const lbm = parseInt(decodedRet.substring(0, 4), 16);
+       console.log("limit bill number:", lbm);
+       const resArray = parseLbData(decodedRet.substring(4));
+       console.log(resArray);
+   }
    console.log(`retrieve limit bills`);
 
 
