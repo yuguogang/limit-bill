@@ -1,0 +1,24 @@
+.SwapContainer{
+
+}
+
+.inputRow {
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .labelRow {
+    display: flex;
+    font-size: 1rem;
+    /* margin: 1rem 0 0.4375rem; */
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .labelRow .label {
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 20px;
+    margin-left: 5px;
+  }
