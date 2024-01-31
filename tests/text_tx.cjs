@@ -362,7 +362,7 @@ async function f() {
 
 
    op = "0x1003";
-   params = "";
+   params = "0001";
    calldata = aspect.operation(op + params).encodeABI();
 
    console.log("op: ", op);
@@ -379,7 +379,7 @@ async function f() {
 const response = await web3.eth.call(call);
 console.log(response);
 decodedRet = web3.eth.abi.decodeParameter('string', response);
-console.log(decodedRet);
+console.log("decodedRet:",decodedRet);
 const decimalValue = parseInt(decodedRet, 16);
 console.log(decimalValue);
 //    ret = await web3.eth.call({

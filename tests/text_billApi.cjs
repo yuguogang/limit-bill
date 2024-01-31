@@ -14,6 +14,9 @@ const account = web3.eth.accounts.privateKeyToAccount(sk.trim());
 const aspectCore = web3.atl.aspectCore();
 const aspectAddress = '0x0aE605Af48A29121bE45a123C11b090065795550';
 const aspect = new web3.atl.Aspect(aspectAddress);
+const factoryABI = JSON.parse(fs.readFileSync('./tests/jit-aa-abi/AspectEnabledSimpleAccountFactory.abi', "utf-8"));
+const factoryAddress = "0x7b20970624Cd01582Cd01385B67B969446AC5110";
+
 function rmPrefix(data) {
     if (data.startsWith('0x')) {
         return data.substring(2, data.length);

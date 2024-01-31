@@ -92,6 +92,13 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
             this.removeLmtBill(params);
             return new Uint8Array(0);
         }
+        if (op == "0004") {
+            sys.log('adamayu in 0004');
+            // sys.log('adamayu in 1003' + BigInt.fromString('0x016345785d8a0000', 16).toString());
+            return stringToUint8Array('0x016345785d8a0000');
+            // let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
+            // return stringToUint8Array(ret);
+        }
         if (op == "1001") {
             let ret = this.getSysPlayers();
             return stringToUint8Array(ret);
@@ -103,9 +110,9 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         if (op == "1003") {
             sys.log('adamayu in 1003');
             // sys.log('adamayu in 1003' + BigInt.fromString('0x016345785d8a0000', 16).toString());
-            // return stringToUint8Array('0x016345785d8a0000');
-            let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
-            return stringToUint8Array(ret);
+            return stringToUint8Array('0x016345785d8a0000');
+            // let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
+            // return stringToUint8Array(ret);
         }
 
         // if (op == "1002") {
@@ -168,11 +175,11 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
     }
     getQuote(amount: u64,sqrtPriceLimitX96:u64,buyOrSell:boolean):string {
 
-        let quoteCalldata = ethereum.abiEncode('quote((address,uint256,uint160,bool))(uint256,uint160,uint24)', [(
+        let quoteCalldata = ethereum.abiEncode('quote', [ethereum.Tuple.fromCoders([
             ethereum.Address.fromHexString('0xe40897Ec3d45486EFd5E2722a40f50C20628eeda'),
             ethereum.Number.fromU64(amount,256),
             ethereum.Number.fromU64(sqrtPriceLimitX96,160),
-            ethereum.Boolean.fromBoolean(buyOrSell))
+            ethereum.Boolean.fromBoolean(buyOrSell)]),
         ]);
         const from = sys.aspect.property.get<Uint8Array>(this.getSysPlayersList()[0]);
         const to = sys.aspect.property.get<Uint8Array>('0xE97E4f4bF4E698cA316aab4353Eb6C2AcC0be8AC');
@@ -180,7 +187,7 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         const staticCallResult = sys.hostApi.evmCall.staticCall(staticCallRequest);
         sys.log('adamayu in static call');
         sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));
-        return uint8ArrayToHex(staticCallResult.ret);
+        return staticCallResult.vmError;
     }
    
     parseCallMethod(calldata: string): string {
