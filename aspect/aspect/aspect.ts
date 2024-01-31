@@ -92,13 +92,6 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
             this.removeLmtBill(params);
             return new Uint8Array(0);
         }
-        if (op == "0004") {
-            sys.log('adamayu in 0004');
-            // sys.log('adamayu in 1003' + BigInt.fromString('0x016345785d8a0000', 16).toString());
-            return stringToUint8Array('0x016345785d8a0000');
-            // let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
-            // return stringToUint8Array(ret);
-        }
         if (op == "1001") {
             let ret = this.getSysPlayers();
             return stringToUint8Array(ret);
@@ -113,6 +106,10 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
             return stringToUint8Array('0x016345785d8a0000');
             // let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
             // return stringToUint8Array(ret);
+        }
+        if (op == "1004") {
+            sys.log('adamayu in 1004');
+            return stringToUint8Array(this.getBalanceOf());
         }
 
         // if (op == "1002") {
@@ -189,6 +186,22 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));
         return staticCallResult.vmError;
     }
+
+    // cast call 0xaDfEcE47796a02245AeE3f65F39318986f946a66 "balanceOf(address)(uint256)" 0xf9f72f7bb3639164e163081bdbe9e4d2c5fc4a7c
+    getBalanceOf():string {
+        let calldata = ethereum.abiEncode('balanceOf', [
+            ethereum.Address.fromHexString('f9f72f7bb3639164e163081bdbe9e4d2c5fc4a7c'),
+        ]);
+        const from = sys.aspect.property.get<Uint8Array>(this.getSysPlayersList()[0]);
+        const to = sys.aspect.property.get<Uint8Array>('aDfEcE47796a02245AeE3f65F39318986f946a66');
+        const staticCallRequest = new StaticCallRequest(from, to,hexToUint8Array( calldata), 1000000000);
+        const staticCallResult = sys.hostApi.evmCall.staticCall(staticCallRequest);
+        sys.log('adamayu in static call');
+        sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));
+        sys.log('adamayu  static call error '+ staticCallResult.vmError);
+        return uint8ArrayToHex(staticCallResult.ret);
+    }
+
    
     parseCallMethod(calldata: string): string {
         if (calldata.startsWith('0x')) {
