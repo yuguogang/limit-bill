@@ -181,7 +181,6 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         sys.log('adamayu in static call');
         sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));
         return uint8ArrayToHex(staticCallResult.ret);
-
     }
    
     parseCallMethod(calldata: string): string {
