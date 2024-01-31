@@ -1,4 +1,6 @@
 import { useContext } from 'react';
+import { Button } from "@mui/material";
+
 import { MetaMaskContext } from '../contexts/MetaMask';
 import './MetaMask.module.css';
 
@@ -27,7 +29,17 @@ const statusConnected = (account, chain) => {
 const statusNotConnected = (connect) => {
   return (
     <span>
-      MetaMask is not connected. <button onClick={connect}>Connect</button>
+      <Button   sx={{
+                color: "#ffc0cb",
+                border: "#ffc0cb",
+                width: "100%",
+                background: "rgba(255, 192, 203,.1)",
+                backgroundColor: "rgba(255, 192, 203,.1)",
+                marginY: "8px",
+                "&.MuiButtonBase-root:hover": {
+                  backgroundColor: "rgba(255, 192, 203,.1)",
+                },
+              }} onClick={connect}  variant="contained">Connect</Button>
     </span>
   )
 }

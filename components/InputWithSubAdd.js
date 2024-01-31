@@ -82,7 +82,7 @@ const handleBlur = () => {
  }
   const materialUITextFieldProps = {
     id: "filled-multiline-flexible",
-    // error:isInputFocused &&(validCompareValue < inputValue ) ?true:false,//||isInputFocused&&active&& validCompareValue === 0 
+    error:isInputFocused &&  inputValue ==0?true:false,//||isInputFocused&&active&& validCompareValue === 0 
   //  error:true,
     // helperText:isInputFocused &&(validCompareValue < inputValue )  ?"Insufficient balance":null,//|| isInputFocused&&active&& validCompareValue === 0
     value: 

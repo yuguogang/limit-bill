@@ -14,7 +14,8 @@ import styles from "./SwapForm.module.css";
 import { OrdersHistoriesTable } from "./OrderHistory";
 import factoryABI from "../abi/Swap/AspectEnabledSimpleAccountFactory.json";
 import { packLbParams, rmPrefix,parseLbData } from "./contractLogic.js";
-
+import MetaMask from "./MetaMask";
+import message from "./Message"
 const factoryAddress = "0x7b20970624Cd01582Cd01385B67B969446AC5110";
 const factoryAbi = factoryABI.abi; 
 
@@ -179,7 +180,7 @@ const aspect = new web3.atl.Aspect(aspectAddress);
 
 
   const addLmtBill = async (amount, price, buyOrSell) => {
-    console.log(`add limit bill`);
+    console.log(`add limit bill`,amount, price, buyOrSell);
     let op = "0x0002";
     let params = rmPrefix(packLbParams(amount, price, buyOrSell));
     let calldata = aspect.operation(op + params).encodeABI();
@@ -209,14 +210,18 @@ const aspect = new web3.atl.Aspect(aspectAddress);
         params: [tx],
         from: accounts[0],
       });
-
-      console.log("Transaction sent:", result);
+if(result){
+message.success(`Transaction:${result}`)
+}
     } catch (error) {
       console.error("Error sending transaction:", error);
     }
   };
 
 const [limBillHistory,setLimBillHistory] = useState()
+const [tabSwitchValue, setTabSwitchValue] = useState(0);
+const [limitPrice, setLimitPrice] = useState(0);
+const [amount, setAmount] = useState(0);
   const getLmtBills=async()=>{
     try {
       let op = "0x1002";
@@ -236,6 +241,7 @@ const [limBillHistory,setLimBillHistory] = useState()
               'latest',  
           ],
       });
+//0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000
 
       console.log("ret", ret);
       
@@ -254,15 +260,51 @@ const [limBillHistory,setLimBillHistory] = useState()
       console.error('Error fetching limit bills:', error);
   }
   }
-  useEffect(()=>{
-    getLmtBills()
-  },[])
+ 
+// 将要移除的limit bill number 作为参数传入
+const removeLmtBill = async (index) => {
+  console.log(`remove limit bill in index `+ index);
+  let op = "0x0003";
+  let params = rmPrefix(index.toString(16).padStart(4,'0'));
+ console.log("op: ", op);
+ console.log("params: ", params);
+ const chainId = await web3.eth.getChainId();
+ const gasPrice = await web3.eth.getGasPrice();
+ let calldata = aspect.operation(op + params).encodeABI();
+ let nonce = await web3.eth.getTransactionCount(metamaskContext.account );
+ let tx = {
+     from: metamaskContext.account,
+     nonce: nonce++,
+     gasPrice,
+     gas: 8000000,
+     data: calldata,
+     to: aspectCore.options.address,
+     chainId
+ }
+
+ try {
+  // const accounts = await window.ethereum.request({
+  //   method: "eth_requestAccounts",
+  // });
+  const result = await window.ethereum.request({
+    method: "eth_sendTransaction",
+    params: [tx],
+    from: metamaskContext.account,
+  });
+if(result){
+  message.success(`Remove Limit Bill Success:${result}`)
+
+}
+  console.log("Transaction sent:", result);
+} catch (error) {
+  console.error("Error sending transaction:", error);
+}
+
+
+}
 
 
 
-  const [tabSwitchValue, setTabSwitchValue] = useState(0);
-  const [limitPrice, setLimitPrice] = useState(0);
-  const [amount, setAmount] = useState(0);
   const handleTabSwitchChange = (event, newValue) => {
     setTabSwitchValue(newValue);
   };
@@ -272,23 +314,42 @@ const [limBillHistory,setLimBillHistory] = useState()
   const handleUpdateAmount = (value) => {
     setAmount(value);
   };
-  const handleSell = () => {
-    console.log("sell");
-  };
-  const handleBuy = () => {
-    console.log("handleBuy");
+  const handleSell = ( ) => {
+    console.log("handleSell",amount,limitPrice);
+    if(amount ==0||limitPrice==0||!amount||!limitPrice){
+      message.error("Please Fill In The Amount And Price")
+    }else{
     try {
-      let res = addLmtBill(0.03,1,0);
+      let res = addLmtBill(amount,limitPrice,1);
       console.log("addLmtBill res", res);
     } catch (error) {
       console.error(error);
-    }
+    }  
+  }
   };
+  const handleBuy = ( ) => {
+    console.log("handleBuy",amount,limitPrice);
+    if(amount ==0||limitPrice==0||!amount||!limitPrice){
+      message.error("Please Fill In The Amount And Price")
+    }else{
+      try {
+        let res = addLmtBill(amount,limitPrice,0);
+        console.log("addLmtBill res", res);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    
+  };
+
+  useEffect(()=>{
+    getLmtBills()
+  },[])
 
   return (
     <section className="SwapContainer flex flex-row gap-24">
       {/* { metamaskContext.account}111 */}
-      <OrdersHistoriesTable limBillHistory={limBillHistory}/>
+      <OrdersHistoriesTable limBillHistory={limBillHistory} removeLmtBill={removeLmtBill}/>
       <section>
         <BuySellSwitchTabs
           tabSwitchValue={tabSwitchValue}
@@ -311,10 +372,12 @@ const [limBillHistory,setLimBillHistory] = useState()
           <InputWithSubAdd
             inputValueParam={limitPrice}
             handleValueChange={handleUpdateLimitPrice}
-            validCompareValue={1}
+            validCompareValue={0}
             type="dollarWithoutBalance"
           />
-          {tabSwitchValue == 0 ? (
+          
+          {!enabled?<MetaMask/>:
+          (tabSwitchValue == 0 ? (
             <Button
               sx={{
                 color: "#ffc0cb",
@@ -350,7 +413,7 @@ const [limBillHistory,setLimBillHistory] = useState()
             >
               Sell
             </Button>
-          )}
+          ))}
         </div>
       </section>
     </section>
