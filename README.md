@@ -4,6 +4,7 @@
 ## Instruction
 
 This is a sample project of Artela Aspect. to get the test success you should add privateKey.txt in top fold.
+in ./tests text_billApi.cjs has addLmtBill ,removeLmtBills, getLmtBills for UI api invoke.
 
 ## Files
 

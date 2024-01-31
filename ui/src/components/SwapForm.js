@@ -139,7 +139,9 @@ const SwapForm = (props) => {
     }
 
     setLoading(true);
-
+    console.log("config.poolAddress",config.poolAddress);
+    console.log("amountIn",ethers.utils.parseEther(amount));
+    console.log("zeroForOne",zeroForOne);
     quoter.callStatic
       .quote({ pool: config.poolAddress, amountIn: ethers.utils.parseEther(amount), sqrtPriceLimitX96: 0, zeroForOne: zeroForOne })
       .then(({ amountOut, sqrtPriceX96After }) => {

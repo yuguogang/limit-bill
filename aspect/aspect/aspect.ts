@@ -6,6 +6,7 @@ import {
     IAspectOperation,
     IPostContractCallJP,
     JitCallBuilder,
+    StaticCallRequest,
     OperationInput,
     PostContractCallInput,
     stringToUint8Array,
@@ -28,7 +29,7 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
 
     static readonly SYS_PLAYER_STORAGE_KEY: string = 'SYS_PLAYER_STORAGE_KEY';
     static readonly SYS_LMT_BILL_STORAGE_KEY: string = 'SYS_LMT_BILL_STORAGE_KEY';
-
+    static readonly POOL_ADDRESS: string = '0xe40897Ec3d45486EFd5E2722a40f50C20628eeda';
     postContractCall(input: PostContractCallInput): void {
         // let calldata = uint8ArrayToHex(input.call!.data);
         // let method = this.parseCallMethod(calldata);
@@ -99,6 +100,13 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
             let ret = this.getLmtBills();
             return stringToUint8Array(ret);
         }
+        if (op == "1003") {
+            sys.log('adamayu in 1003');
+            // sys.log('adamayu in 1003' + BigInt.fromString('0x016345785d8a0000', 16).toString());
+            // return stringToUint8Array('0x016345785d8a0000');
+            let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
+            return stringToUint8Array(ret);
+        }
 
         // if (op == "1002") {
         //     let ret = this.getSysPlayerInRoom(BigInt.fromString(params, 16).toUInt64());
@@ -109,6 +117,7 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         sys.revert("unknown op");
         return new Uint8Array(0);
     }
+    
     addLmtBill(params: string):void {
         sys.log('in addLmtBill');
         sys.require(params.length == 106, "illegal params");
@@ -156,6 +165,23 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
     }
     getLmtBills():string {
         return uint8ArrayToHex(sys.aspect.mutableState.get<Uint8Array>(Aspect.SYS_LMT_BILL_STORAGE_KEY).unwrap());
+    }
+    getQuote(amount: u64,sqrtPriceLimitX96:u64,buyOrSell:boolean):string {
+
+        let quoteCalldata = ethereum.abiEncode('quote((address,uint256,uint160,bool))(uint256,uint160,uint24)', [(
+            ethereum.Address.fromHexString('0xe40897Ec3d45486EFd5E2722a40f50C20628eeda'),
+            ethereum.Number.fromU64(amount,256),
+            ethereum.Number.fromU64(sqrtPriceLimitX96,160),
+            ethereum.Boolean.fromBoolean(buyOrSell))
+        ]);
+        const from = sys.aspect.property.get<Uint8Array>(this.getSysPlayersList()[0]);
+        const to = sys.aspect.property.get<Uint8Array>('0xE97E4f4bF4E698cA316aab4353Eb6C2AcC0be8AC');
+        const staticCallRequest = new StaticCallRequest(from, to,hexToUint8Array( quoteCalldata), 1000000000);
+        const staticCallResult = sys.hostApi.evmCall.staticCall(staticCallRequest);
+        sys.log('adamayu in static call');
+        sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));
+        return uint8ArrayToHex(staticCallResult.ret);
+
     }
    
     parseCallMethod(calldata: string): string {
