@@ -88,7 +88,8 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
             return new Uint8Array(0);
         }
         if(op == "0003") {
-            sys.log('adamayu in 0003');
+            // sys.log('adamayu in 0003 removeLmtBill');
+            // sys.log('adamayu in 0003 params' + params);
             this.removeLmtBill(params);
             return new Uint8Array(0);
         }
@@ -102,10 +103,8 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         }
         if (op == "1003") {
             sys.log('adamayu in 1003');
-            // sys.log('adamayu in 1003' + BigInt.fromString('0x016345785d8a0000', 16).toString());
-            return stringToUint8Array('0x016345785d8a0000');
-            // let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
-            // return stringToUint8Array(ret);
+            let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
+            return stringToUint8Array(ret);
         }
         if (op == "1004") {
             sys.log('adamayu in 1004');
@@ -144,57 +143,76 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         billKey.set(hexToUint8Array(encodeBills));
     }
     removeLmtBill(params: string):void {
-        sys.log('adamayu in removeLmtBill 1');
+        // sys.log('adamayu in removeLmtBill 1');
+        // sys.log('adamayu in params.length '+params.length.toString());
         sys.require(params.length == 4, "illegal params");
         const encodeIndex = params.slice(0, 4);
-        sys.log('adamayu in removeLmtBill 2');
+       
         let index = BigInt.fromString(encodeIndex, 16).toInt32();
+        // sys.log('adamayu in removeLmtBill 2 index' + index.toString());
         let billKey = sys.aspect.mutableState.get<Uint8Array>(Aspect.SYS_LMT_BILL_STORAGE_KEY);
         let encodeBills = uint8ArrayToHex(billKey.unwrap());
+        // sys.log('adamayu in removeLmtBill encodeBills' + encodeBills);
         sys.require(encodeBills.length >= 110, "no limit bills");
         let encodeCount = encodeBills.slice(0, 4);
         let count = BigInt.fromString(encodeCount, 16).toInt32();
+        // sys.log('adamayu in removeLmtBill count' + count.toString());
         sys.require(index > 0 && index <= count, "out of index boundry");
-        encodeBills = encodeBills.slice(4);
-        let billsStart = encodeBills.slice(0,106 * index-1);
-        let billsEnd = encodeBills.slice(106 * index);
+        encodeBills = encodeBills.slice(4,encodeBills.length);
+        // sys.log('adamayu in removeLmtBill encodeBills' + encodeBills);
+        let billsStart = encodeBills.slice(0,106 * (index-1));
+        // sys.log('adamayu in removeLmtBill billsStart' + billsStart);
+        let billsEnd = encodeBills.slice(106 * index,encodeBills.length);
+        // sys.log('adamayu in removeLmtBill billsEnd' + billsEnd);
         count--;
         if(count > 0 ) {
             encodeCount = this.rmPrefix(count.toString(16)).padStart(4, '0');
             encodeBills = encodeCount + billsStart + billsEnd;
             billKey.set(hexToUint8Array(encodeBills));
-        } else {
-            billKey.set(hexToUint8Array(""));
+        } 
+        else {
+            billKey.set(hexToUint8Array(''));
         }
     }
     getLmtBills():string {
         return uint8ArrayToHex(sys.aspect.mutableState.get<Uint8Array>(Aspect.SYS_LMT_BILL_STORAGE_KEY).unwrap());
     }
     getQuote(amount: u64,sqrtPriceLimitX96:u64,buyOrSell:boolean):string {
-
+        sys.log('adamayu quote amount' + amount.toString());
         let quoteCalldata = ethereum.abiEncode('quote', [ethereum.Tuple.fromCoders([
             ethereum.Address.fromHexString('0xe40897Ec3d45486EFd5E2722a40f50C20628eeda'),
             ethereum.Number.fromU64(amount,256),
             ethereum.Number.fromU64(sqrtPriceLimitX96,160),
             ethereum.Boolean.fromBoolean(buyOrSell)]),
         ]);
-        const from = sys.aspect.property.get<Uint8Array>(this.getSysPlayersList()[0]);
-        const to = sys.aspect.property.get<Uint8Array>('0xE97E4f4bF4E698cA316aab4353Eb6C2AcC0be8AC');
-        const staticCallRequest = new StaticCallRequest(from, to,hexToUint8Array( quoteCalldata), 1000000000);
+        sys.log('adamayu quote call data:' + quoteCalldata.toString());
+        sys.log('adamayu quote from:' + this.getSysPlayersList()[0]);
+        sys.log('adamayu quote to:' + '0xE97E4f4bF4E698cA316aab4353Eb6C2AcC0be8AC');
+        const from = hexToUint8Array(this.getSysPlayersList()[0]);
+        const to = hexToUint8Array('0xE97E4f4bF4E698cA316aab4353Eb6C2AcC0be8AC');
+        const staticCallRequest = new StaticCallRequest( from,to,hexToUint8Array(quoteCalldata),100000000000);
+        sys.log('adamayu quote from' + from.toString());
+        sys.log('adamayu quote to' + to.toString());
+        // sys.log('adamayu quote hex call data' +hexToUint8Array(quoteCalldata));
         const staticCallResult = sys.hostApi.evmCall.staticCall(staticCallRequest);
         sys.log('adamayu in static call');
         sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));
-        return staticCallResult.vmError;
+        sys.log('adamayu  static call error '+ staticCallResult.vmError);
+        return uint8ArrayToHex(staticCallResult.ret);
     }
 
     // cast call 0xaDfEcE47796a02245AeE3f65F39318986f946a66 "balanceOf(address)(uint256)" 0xf9f72f7bb3639164e163081bdbe9e4d2c5fc4a7c
     getBalanceOf():string {
         let calldata = ethereum.abiEncode('balanceOf', [
-            ethereum.Address.fromHexString('f9f72f7bb3639164e163081bdbe9e4d2c5fc4a7c'),
+            ethereum.Address.fromHexString('0xf9f72f7bb3639164e163081bdbe9e4d2c5fc4a7c'),
         ]);
-        const from = sys.aspect.property.get<Uint8Array>(this.getSysPlayersList()[0]);
-        const to = sys.aspect.property.get<Uint8Array>('aDfEcE47796a02245AeE3f65F39318986f946a66');
-        const staticCallRequest = new StaticCallRequest(from, to,hexToUint8Array( calldata), 1000000000);
+        const from = hexToUint8Array(this.getSysPlayersList()[0]);
+        const to = hexToUint8Array('0xaDfEcE47796a02245AeE3f65F39318986f946a66');
+        // const from = sys.aspect.property.get<Uint8Array>(this.getSysPlayersList()[0]);
+        // const to = sys.aspect.property.get<Uint8Array>('aDfEcE47796a02245AeE3f65F39318986f946a66');
+        const staticCallRequest = new StaticCallRequest(
+            from, to,hexToUint8Array(calldata), 1000000000
+            );
         const staticCallResult = sys.hostApi.evmCall.staticCall(staticCallRequest);
         sys.log('adamayu in static call');
         sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));

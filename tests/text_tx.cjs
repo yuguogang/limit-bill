@@ -361,29 +361,25 @@ async function f() {
    console.log(`retrieve limit bills`);
 
 
-   op = "0x1004";
-    params = rmPrefix("0x0001");
+   op = "0x1003";
+   params = "";
+   calldata = aspect.operation(op + params).encodeABI();
 
    console.log("op: ", op);
    console.log("params: ", params);
 
-   calldata = aspect.operation(op + params).encodeABI();
+   ret = await web3.eth.call({
+       to: aspectCore.options.address, // contract address
+       data: calldata
+   });
+    console.log(ret);
+    decodedRet = web3.eth.abi.decodeParameter('string', ret);
+    console.log( decodedRet);
+    // const decimalValue = parseInt(decodedRet, 16);
+    // console.log(decimalValue/10**18);
+    console.log(`quote success`);
 
-   tx = {
-       from: account.address,
-       nonce: nonce++,
-       gasPrice,
-       gas: 124000000,
-       data: calldata,
-       to: aspectCore.options.address,
-       chainId
-   }
-
-   signedTx = await web3.eth.accounts.signTransaction(tx, account.privateKey);
-   receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-
-   console.log('balance of test: sucess');
-   console.log(receipt.data)
+   
 //    ret = await web3.eth.call({
 //        to: aspectCore.options.address, // contract address
 //        data: calldata

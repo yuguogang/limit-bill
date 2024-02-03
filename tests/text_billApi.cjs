@@ -12,7 +12,7 @@ const sk = fs.readFileSync("privateKey.txt", 'utf-8');
 const account = web3.eth.accounts.privateKeyToAccount(sk.trim());
 // let nonce = await web3.eth.getTransactionCount(account.address);
 const aspectCore = web3.atl.aspectCore();
-const aspectAddress = '0x0aE605Af48A29121bE45a123C11b090065795550';
+const aspectAddress = '0xd522a20EC4ccaC92986957dBF13712154a715987';
 const aspect = new web3.atl.Aspect(aspectAddress);
 const factoryABI = JSON.parse(fs.readFileSync('./tests/jit-aa-abi/AspectEnabledSimpleAccountFactory.abi', "utf-8"));
 const factoryAddress = "0x7b20970624Cd01582Cd01385B67B969446AC5110";
@@ -27,10 +27,13 @@ function rmPrefix(data) {
 async function f() {
     
     console.log('start running params');
-    console.log(await getLmtBills());
+    
     await addLmtBill(0.03,4978,0);
-    await removeLmtBill(3);
-    // console.log(await getLmtBills());
+    await addLmtBill(0.04,4978,0);
+    await addLmtBill(0.05,4978,0);
+    console.log(await getLmtBills());
+    await removeLmtBill(2);
+    console.log(await getLmtBills());
 }
 const addLmtBill = async (amount, price, buyOrSell) => {
     console.log(`add limit bill`);
