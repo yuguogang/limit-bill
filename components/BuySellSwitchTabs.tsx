@@ -1,7 +1,7 @@
 import React from "react";
 import {Box,Tabs,Tab} from "@mui/material"
 
-export default function BuySellSwitchTabs(props){
+export default function BuySellSwitchTabs(props: { tabSwitchValue: any; handleTabSwitchChange: any; }){
 
 const {tabSwitchValue,handleTabSwitchChange}= props
 

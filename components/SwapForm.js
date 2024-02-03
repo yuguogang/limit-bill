@@ -172,7 +172,7 @@ const config = {
 // const web3 =enabled&& new Web3(window.ethereum);
 const web3 = new Web3(config.node);
 const aspectCore = web3.atl.aspectCore();
-const aspectAddress = "0x0aE605Af48A29121bE45a123C11b090065795550";
+const aspectAddress = "0xd522a20EC4ccaC92986957dBF13712154a715987";
 const aspect = new web3.atl.Aspect(aspectAddress);
 
   console.log("  metamaskContext.account ", metamaskContext.account )
