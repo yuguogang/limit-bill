@@ -19,7 +19,7 @@ code {
 html, body, #root {
   @apply w-full h-full;
   background-image: linear-gradient(to right, #ddd6fe , #fbcfe8, rgb(251 207 232 / 0));
-
+color: #ccc;
 }
 
 #root {

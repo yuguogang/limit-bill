@@ -347,7 +347,7 @@ if(result){
   },[])
 
   return (
-    <section className="SwapContainer flex flex-row gap-24">
+    <section className="SwapContainer flex flex-row gap-24" style={{color:"#ccc"}}>
       {/* { metamaskContext.account}111 */}
       <OrdersHistoriesTable limBillHistory={limBillHistory} removeLmtBill={removeLmtBill}/>
       <section>
