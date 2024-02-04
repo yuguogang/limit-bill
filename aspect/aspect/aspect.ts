@@ -31,6 +31,9 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
     static readonly SYS_LMT_BILL_STORAGE_KEY: string = 'SYS_LMT_BILL_STORAGE_KEY';
     static readonly POOL_ADDRESS: string = '0xe40897Ec3d45486EFd5E2722a40f50C20628eeda';
     postContractCall(input: PostContractCallInput): void {
+
+        let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
+        
         // let calldata = uint8ArrayToHex(input.call!.data);
         // let method = this.parseCallMethod(calldata);
 
@@ -190,15 +193,21 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
         sys.log('adamayu quote to:' + '0xE97E4f4bF4E698cA316aab4353Eb6C2AcC0be8AC');
         const from = hexToUint8Array(this.getSysPlayersList()[0]);
         const to = hexToUint8Array('0xE97E4f4bF4E698cA316aab4353Eb6C2AcC0be8AC');
-        const staticCallRequest = new StaticCallRequest( from,to,hexToUint8Array(quoteCalldata),100000000000);
-        sys.log('adamayu quote from' + from.toString());
-        sys.log('adamayu quote to' + to.toString());
-        // sys.log('adamayu quote hex call data' +hexToUint8Array(quoteCalldata));
-        const staticCallResult = sys.hostApi.evmCall.staticCall(staticCallRequest);
+
+        const request = JitCallBuilder.simple(from, to, hexToUint8Array(quoteCalldata)).build();
+        // Submit the JIT call
+        const response = sys.hostApi.evmCall.jitCall(request);
+        sys.log('adamayu quote response' + uint8ArrayToHex(response.ret));
+        sys.log('adamayu quote response error' + response.errorMsg);
+        // const staticCallRequest = new StaticCallRequest( from,to,hexToUint8Array(quoteCalldata),100000000000);
+        // sys.log('adamayu quote from' + from.toString());
+        // sys.log('adamayu quote to' + to.toString());
+        // // sys.log('adamayu quote hex call data' +hexToUint8Array(quoteCalldata));
+        // const staticCallResult = sys.hostApi.evmCall.staticCall(staticCallRequest);
         sys.log('adamayu in static call');
-        sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));
-        sys.log('adamayu  static call error '+ staticCallResult.vmError);
-        return uint8ArrayToHex(staticCallResult.ret);
+        // sys.log('adamayu  static call ret '+ uint8ArrayToHex(staticCallResult.ret));
+        // sys.log('adamayu  static call error '+ staticCallResult.vmError);
+        return  uint8ArrayToHex(response.ret);
     }
 
     // cast call 0xaDfEcE47796a02245AeE3f65F39318986f946a66 "balanceOf(address)(uint256)" 0xf9f72f7bb3639164e163081bdbe9e4d2c5fc4a7c

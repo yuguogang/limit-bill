@@ -8,8 +8,8 @@ const { numberToHex } = require("@artela/web3-utils");
 const BigNumber = require('bignumber.js');
 
 // const contractBin = fs.readFileSync('./contracts/build/contract/Royale.bin', "utf-8");
-const abi = JSON.parse(fs.readFileSync('./contracts/Manager.json', "utf-8"));
-const contractAddress = "0x7452F4B21a85E9e3590c68982E92A150108faefE";
+const abi = JSON.parse(fs.readFileSync('./contracts/ERC20.json', "utf-8"));
+const contractAddress = "0xA81220CeBBD4A410334f2e81d51e497654c2d0D5";
 // const contractABI = JSON.parse(abi);
 // const EthereumTx = require('ethereumjs-tx').Transaction;
 
@@ -137,28 +137,28 @@ async function f() {
     // prepare 3. binding contract to aspect
     // ******************************************
 
-    // console.log(`binding contract`);
-    // // binding with smart contract
-    // let contractBindingData = await contract.bind({
-    //     priority: 1,
-    //     aspectId: aspect.options.address,
-    //     aspectVersion: 1,
-    // }).encodeABI();
+    console.log(`binding contract`);
+    // binding with smart contract
+    let contractBindingData = await contract.bind({
+        priority: 1,
+        aspectId: aspect.options.address,
+        aspectVersion: 1,
+    }).encodeABI();
 
-    // tx = {
-    //     from: account.address,
-    //     nonce: nonce++,
-    //     gasPrice,
-    //     gas: 4000000,
-    //     data: contractBindingData,
-    //     to: aspectCore.options.address,
-    //     chainId
-    // }
+    tx = {
+        from: account.address,
+        nonce: nonce++,
+        gasPrice,
+        gas: 4000000,
+        data: contractBindingData,
+        to: aspectCore.options.address,
+        chainId
+    }
 
-    // signedTx = await web3.eth.accounts.signTransaction(tx, account.privateKey);
-    // receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-    // console.log(`binding contract result:`);
-    // console.log(receipt);
+    signedTx = await web3.eth.accounts.signTransaction(tx, account.privateKey);
+    receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    console.log(`binding contract result:`);
+    console.log(receipt);
 
     // ******************************************
     // prepare 4. create jit AA
