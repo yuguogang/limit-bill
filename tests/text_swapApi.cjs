@@ -137,28 +137,28 @@ async function f() {
     // prepare 3. binding contract to aspect
     // ******************************************
 
-    // console.log(`binding contract`);
-    // // binding with smart contract
-    // let contractBindingData = await contract.bind({
-    //     priority: 1,
-    //     aspectId: aspect.options.address,
-    //     aspectVersion: 1,
-    // }).encodeABI();
+    console.log(`binding contract`);
+    // binding with smart contract
+    let contractBindingData = await contract.bind({
+        priority: 1,
+        aspectId: aspect.options.address,
+        aspectVersion: 1,
+    }).encodeABI();
 
-    // tx = {
-    //     from: account.address,
-    //     nonce: nonce++,
-    //     gasPrice,
-    //     gas: 4000000,
-    //     data: contractBindingData,
-    //     to: aspectCore.options.address,
-    //     chainId
-    // }
+    tx = {
+        from: account.address,
+        nonce: nonce++,
+        gasPrice,
+        gas: 4000000,
+        data: contractBindingData,
+        to: aspectCore.options.address,
+        chainId
+    }
 
-    // signedTx = await web3.eth.accounts.signTransaction(tx, account.privateKey);
-    // receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-    // console.log(`binding contract result:`);
-    // console.log(receipt);
+    signedTx = await web3.eth.accounts.signTransaction(tx, account.privateKey);
+    receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+    console.log(`binding contract result:`);
+    console.log(receipt);
 
     // ******************************************
     // prepare 4. create jit AA

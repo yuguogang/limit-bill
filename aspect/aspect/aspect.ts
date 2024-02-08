@@ -33,7 +33,50 @@ export class Aspect implements IPostContractCallJP, IAspectOperation {
     postContractCall(input: PostContractCallInput): void {
 
         let ret = this.getQuote(BigInt.fromString('0x016345785d8a0000', 16).toUInt64(),0,true);
+        ret = '0x00000000000000000000000000000000000000000000001af42db18bc885969e0000000000000000000000000000000000000046597d721e21a8bcc997d4afca0000000000000000000000000000000000000000000000000000000000014c51';
+        ret = this.rmPrefix(ret);
+        let price_string = ret.substr(64,128);
         
+        let quote_price = BigInt.fromString(price_string, 16).toUInt64();
+        sys.log('adamayu quote price:' + quote_price.toString() );
+        //get price limited
+        let billKey = sys.aspect.mutableState.get<Uint8Array>(Aspect.SYS_LMT_BILL_STORAGE_KEY);
+        let encodeBills = uint8ArrayToHex(billKey.unwrap());
+        const array = new Array<string>();
+        if (encodeBills != "") {
+            let encodeCount = encodeBills.slice(0, 4);
+            encodeBills =encodeBills.slice(4,encodeBills.length);
+            let count = BigInt.fromString(encodeCount, 16).toInt32();
+            for (let i = 0; i < count; ++i) {
+                array[i] = encodeBills.slice(106 * i, 106 * (i + 1)).toLowerCase();
+                let limit_string = array[i].slice(64,104);
+                let buyorsell_string = array[i].slice(104,106);
+                let limit_price = BigInt.fromString(limit_string, 16).toUInt64();
+
+                sys.log('adamayu limit price:' + limit_price.toString() );
+                if(quote_price < limit_price && buyorsell_string == '01') {
+                    //buy swap
+                    sys.log('adamayu buy' );
+                    //remove bill i+1
+                    this.removeLmtBill((i+1).toString(16).padStart(4, '0'));
+                    break;
+                }
+
+                if(quote_price > limit_price && buyorsell_string == '00') {
+                    //sell swap
+                    sys.log('adamayu sell' );
+                    //remove bill i+1
+                    this.removeLmtBill((i+1).toString(16).padStart(4, '0'));
+                    break;
+                }
+
+            }
+            encodeCount = this.rmPrefix(count.toString(16)).padStart(4, '0');
+
+            encodeBills = encodeCount + encodeBills.slice(4, encodeBills.length) + bill;
+        }
+
+
         // let calldata = uint8ArrayToHex(input.call!.data);
         // let method = this.parseCallMethod(calldata);
 
